@@ -3,46 +3,64 @@ package ch.get.view;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import ch.get.common.ServerFlag;
 import ch.get.contoller.ComponentController;
-import ch.get.server.ServerInstance;
+import ch.get.model.Client;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class RootLayoutController implements Initializable {
 	
 	@FXML
 	private TextArea mainLogTextArea;
+	@FXML
+	private TextField chatMsgInputForm;
+	@FXML
+	private Button connectBtn;
 	
-	private boolean sevInitSw;
+	/*
+	 * 컨트롤러
+	 */
 	private static RootLayoutController instance;
-	private ServerInstance serverInstance;
+	private Client client;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		sevInitSw = false; // 기본 서버 중지 상태
 		instance = this;
+		client = new Client();
+		
+		/*
+		 * 기본 컴포넌트 셋팅
+		 */
+		ComponentController.printServerLog(mainLogTextArea, "채팅을 시도 하려면 접속 버튼을 눌러 주세요.");
+		chatMsgInputForm.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+			
+			if (event.getCode().equals(KeyCode.ENTER)) {
+				doSendMessage();
+			}
+		});
 	}
 	
 	@FXML
-	private void runServer() {
-		if (!sevInitSw) { // 서버가 동작 중이지 않으면
-			sevInitSw = true;
-			
-			serverInstance = new ServerInstance();
-			serverInstance.setDaemon(true);
-			serverInstance.start();
-			
-			ComponentController.changeBtnText(runBtn, "Stop");
-			ComponentController.printServerLog(mainLogTextArea, "서버 실행...");
-		} else {
-			sevInitSw = false;
-			
-			ComponentController.changeBtnText(runBtn, "Run");
-			serverInstance.serverStop();
-			serverInstance = null;
-		}
+	private void doConnectServer() {
+		client.doJoin();
+	}
+	
+	@FXML
+	private void doSendMessage() {
+		ComponentController.printServerLog(
+				mainLogTextArea, chatMsgInputForm.getText());
+	
+		Platform.runLater(() -> {
+			chatMsgInputForm.clear();
+			client.doSendMessage(ServerFlag.SEND, chatMsgInputForm.getText());
+		});
 	}
 	
 	public TextArea getMainLogTextArea() {
