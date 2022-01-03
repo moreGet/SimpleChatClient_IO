@@ -1,6 +1,8 @@
 package ch.get.view;
 
 import java.net.URL;
+import java.security.cert.PKIXRevocationChecker.Option;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import ch.get.common.ServerFlag;
@@ -30,6 +32,8 @@ public class RootLayoutController implements Initializable {
 	private static RootLayoutController instance;
 	private Client client;
 	
+	private boolean isConnected = false;
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		instance = this;
@@ -49,7 +53,18 @@ public class RootLayoutController implements Initializable {
 	
 	@FXML
 	private void doConnectServer() {
-		client.doJoin();
+		if (!isConnected) {
+			client.doJoin();
+			
+			if (client.getSocket() != null) {
+				isConnected = true;
+				ComponentController.changeBtnText(connectBtn, "나가기");
+			}
+		} else {
+			client.doQuit();
+			isConnected = false;
+			ComponentController.changeBtnText(connectBtn, "접속");
+		}
 	}
 	
 	@FXML
@@ -58,13 +73,21 @@ public class RootLayoutController implements Initializable {
 				mainLogTextArea, chatMsgInputForm.getText());
 	
 		Platform.runLater(() -> {
-			chatMsgInputForm.clear();
 			client.doSendMessage(ServerFlag.SEND, chatMsgInputForm.getText());
+			chatMsgInputForm.clear();
 		});
 	}
 	
 	public TextArea getMainLogTextArea() {
 		return mainLogTextArea;
+	}
+	
+	public Button getConnectBtn() {
+		return connectBtn;
+	}
+	
+	public void setConnected(boolean isConnected) {
+		this.isConnected = isConnected;
 	}
 	
 	public static RootLayoutController getInstance() {
