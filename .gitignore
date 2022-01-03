@@ -1,0 +1,6 @@
+## DIR 
+/bin
+/*.settings
+
+## FILE
+*.class
