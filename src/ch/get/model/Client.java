@@ -74,33 +74,32 @@ public class Client {
 	
 	// 서버로 부터 오는 메세지를 읽는 클라이언트 쓰레드
 	private void doReadMessage() {
-		ComponentController.printServerLog(
-				RootLayoutController.getInstance().getMainLogTextArea(), "READ I/O THREAD RUN...");
+		LoggerUtil.info("READ I/O THREAD RUN...");
 		
-			Thread msgReadThread = new Thread(() -> {
-				try {
-					while (true) {
-						String msg = br.readLine();
-						
-						if (msg == null) {
-							ComponentController.changeBtnText(
-									RootLayoutController.getInstance().getConnectBtn(), 
-									"접속");
-							RootLayoutController.getInstance().setConnected(false);
-							break;
-						}
-						
-						ComponentController.printServerLog(
-								RootLayoutController.getInstance().getMainLogTextArea(), msg);
+		Thread msgReadThread = new Thread(() -> {
+			try {
+				while (true) {
+					String msg = br.readLine();
+					
+					if (msg == null) {
+						ComponentController.changeBtnText(
+								RootLayoutController.getInstance().getConnectBtn(), 
+								"접속");
+						RootLayoutController.getInstance().setConnected(false);
+						throw new IOException();
 					}
-				} catch (IOException e) {
+					
 					ComponentController.printServerLog(
-							RootLayoutController.getInstance().getMainLogTextArea(), "접속 종료...");
+							RootLayoutController.getInstance().getMainLogTextArea(), msg);
 				}
-			});
-			
-			msgReadThread.setDaemon(true);
-			msgReadThread.start();
+			} catch (IOException e) {
+				ComponentController.printServerLog(
+						RootLayoutController.getInstance().getMainLogTextArea(), "접속 종료...");
+			}
+		});
+		
+		msgReadThread.setDaemon(true);
+		msgReadThread.start();
 	}
 	
 	public void doSendMessage(ServerFlag serverFlag, String msg) {
@@ -124,7 +123,7 @@ public class Client {
 	
 	public void doQuit() {
 		try {
-			if (socket != null || !socket.isClosed()) {
+			if (socket != null || !socket.isClosed()) {;
 				try {
 					if (socket.isConnected()) {
 						StringBuffer sb = new StringBuffer();
