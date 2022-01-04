@@ -1,6 +1,6 @@
 ## DIR 
-/bin
-/*.settings
+bin/
+*.settings
 
 ## FILE
 *.class

@@ -16,7 +16,7 @@ public class MainApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		primaryStage.setTitle("간단한 채팅 클라이언트 v1.1");
-		primaryStage.setWidth(660);
+		primaryStage.setWidth(675);
 		primaryStage.setHeight(420);
 		primaryStage.setResizable(false);
 		primaryStage.initStyle(StageStyle.UTILITY);
