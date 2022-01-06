@@ -1,10 +1,10 @@
 package ch.get.view;
 
 import java.net.URL;
-import java.security.cert.PKIXRevocationChecker.Option;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import ch.get.MainApp;
 import ch.get.common.ServerFlag;
 import ch.get.contoller.ComponentController;
 import ch.get.model.Client;
@@ -31,40 +31,32 @@ public class RootLayoutController implements Initializable {
 	 */
 	private static RootLayoutController instance;
 	private Client client;
-	
-	private boolean isConnected = false;
+	private Thread clientThread;
+	private MainApp mainApp;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		instance = this;
-		client = new Client();
 		
 		/*
 		 * 기본 컴포넌트 셋팅
 		 */
 		ComponentController.printServerLog(mainLogTextArea, "채팅을 시도 하려면 접속 버튼을 눌러 주세요.");
 		chatMsgInputForm.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-			
 			if (event.getCode().equals(KeyCode.ENTER)) {
-				doSendMessage();
+				if (isConnected()) {
+					doSendMessage();
+				}
 			}
 		});
 	}
 	
 	@FXML
 	private void doConnectServer() {
-		if (!isConnected) {
-			client.doJoin();
-			
-			if (client.getSocket() != null) {
-				isConnected = true;
-				ComponentController.changeBtnText(connectBtn, "나가기");
-			}
-		} else {
-			client.doQuit();
-			isConnected = false;
-			ComponentController.changeBtnText(connectBtn, "접속");
-		}
+		client = new Client();
+		clientThread = new Thread(client);
+		clientThread.setDaemon(true);
+		clientThread.start();
 	}
 	
 	@FXML
@@ -78,6 +70,14 @@ public class RootLayoutController implements Initializable {
 		});
 	}
 	
+	@FXML
+	private void doShowInfo() {
+		mainApp.showInfoWindow();
+	}
+	
+	/*
+	 * GETTER
+	 */
 	public TextArea getMainLogTextArea() {
 		return mainLogTextArea;
 	}
@@ -86,10 +86,21 @@ public class RootLayoutController implements Initializable {
 		return connectBtn;
 	}
 	
-	public void setConnected(boolean isConnected) {
-		this.isConnected = isConnected;
+	public void setMainApp(MainApp mainApp) {
+		this.mainApp = mainApp;
 	}
 	
+	public boolean isConnected() {
+		if(Optional.ofNullable(client).isPresent()) {
+			return client.isConnected();
+		}
+		
+		return false;
+	}
+	
+	/*
+	 * SINGLETON
+	 */
 	public static RootLayoutController getInstance() {
 		return instance;
 	}

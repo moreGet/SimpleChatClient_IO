@@ -18,7 +18,7 @@ import ch.get.util.LoggerUtil;
 import ch.get.util.UuidUtil;
 import ch.get.view.RootLayoutController;
 
-public class Client {
+public class Client implements Runnable {
 	
 	public final int SOCKET_TIME_OUT = 3000;
 	
@@ -45,6 +45,11 @@ public class Client {
 		this.nickName = id.toString();
 	}
 	
+	@Override
+	public void run() {
+		doJoin();
+	}
+	
 	public void doJoin() {
 		try {
 			this.socket = new Socket();
@@ -64,6 +69,9 @@ public class Client {
 				
 				doSendMessage(ServerFlag.JOIN, this.nickName);
 				doReadMessage(); // 2. 읽기 쓰레드 수행
+				
+				ComponentController.changeBtnText(
+						RootLayoutController.getInstance().getConnectBtn(), "나가기");
 			}
 		} catch (IOException e) {
 			ComponentController.printServerLog(
@@ -85,7 +93,6 @@ public class Client {
 						ComponentController.changeBtnText(
 								RootLayoutController.getInstance().getConnectBtn(), 
 								"접속");
-						RootLayoutController.getInstance().setConnected(false);
 						throw new IOException();
 					}
 					
@@ -135,6 +142,9 @@ public class Client {
 						
 						pw.println(sb.toString());
 						sb = null;
+						
+						ComponentController.changeBtnText(
+								RootLayoutController.getInstance().getConnectBtn(), "접속");
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -160,7 +170,14 @@ public class Client {
 		return clientId;
 	}
 	
-	public Socket getSocket() {
-		return socket;
+	public boolean isConnected() {
+		if (socket == null || !socket.isConnected()) {
+			return false;
+		}
+		
+		return true;
 	}
+//	public Socket getSocket() {
+//		return socket;
+//	}
 }
