@@ -1,13 +1,17 @@
 package ch.get.view;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ch.get.MainApp;
 import ch.get.common.ServerFlag;
+import ch.get.common.UserPropertiesKey;
 import ch.get.contoller.ComponentController;
 import ch.get.model.Client;
+import ch.get.model.UserProperties;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,6 +43,12 @@ public class RootLayoutController implements Initializable {
 		instance = this;
 		
 		/*
+		 * 기본 서버 정보 수정
+		 */
+		UserProperties.getUserInfo().put(UserPropertiesKey.DEST_ADDR.name(), "127.0.0.1");
+		UserProperties.getUserInfo().put(UserPropertiesKey.DEST_PORT.name(), "10000");
+		
+		/*
 		 * 기본 컴포넌트 셋팅
 		 */
 		ComponentController.printServerLog(mainLogTextArea, "채팅을 시도 하려면 접속 버튼을 눌러 주세요.");
@@ -53,41 +63,79 @@ public class RootLayoutController implements Initializable {
 	
 	@FXML
 	private void doConnectServer() {
-		client = new Client();
-		clientThread = new Thread(client);
-		clientThread.setDaemon(true);
-		clientThread.start();
+		if (!isConnected()) {
+			client = new Client();
+			clientThread = new Thread(client);
+			WeakReference<Thread> wr = new WeakReference<Thread>(clientThread);
+			clientThread.setDaemon(true);
+			clientThread.start();
+		} else {
+			client.doQuit();
+			clientThread = null;
+		}
 	}
 	
 	@FXML
-	private void doSendMessage() {
-		ComponentController.printServerLog(
-				mainLogTextArea, chatMsgInputForm.getText());
-	
+	private void doSendMessage() {	
 		Platform.runLater(() -> {
-			client.doSendMessage(ServerFlag.SEND, chatMsgInputForm.getText());
-			chatMsgInputForm.clear();
+			String str = chatMsgInputForm.getText().trim();
+			
+			boolean checkStr = 
+					Optional.ofNullable(str)
+							.filter(elem -> elem.length() >= 1)
+							.isPresent();
+			
+			if (checkStr) {
+				ComponentController.printServerLog(
+						mainLogTextArea, 
+						str);
+				
+				client.doSendMessage(ServerFlag.SEND, chatMsgInputForm.getText());
+				chatMsgInputForm.clear();	
+			}
 		});
 	}
 	
 	@FXML
 	private void doShowInfo() {
 		mainApp.showInfoWindow();
+		
+		TextField hostField = 
+				InfoLayoutController.getInstance().getHostAddrField();
+		TextField portField = 
+				InfoLayoutController.getInstance().getHostPortField();
+		
+		ConcurrentHashMap<String, Object> userInfo = UserProperties.getUserInfo();
+		
+		hostField.setText(userInfo.get(UserPropertiesKey.DEST_ADDR.name()).toString());
+		portField.setText(userInfo.get(UserPropertiesKey.DEST_PORT.name()).toString());
+		
+		if (isConnected()) {
+			hostField.setDisable(true);
+			portField.setDisable(true);
+		} else {
+			hostField.setDisable(false);
+			portField.setDisable(false);
+		}
 	}
 	
 	/*
 	 * GETTER
 	 */
+	public Client getClient() {
+		return client;
+	}
+	
 	public TextArea getMainLogTextArea() {
 		return mainLogTextArea;
 	}
 	
-	public Button getConnectBtn() {
-		return connectBtn;
+	public TextField getChatMsgInputForm() {
+		return chatMsgInputForm;
 	}
 	
-	public void setMainApp(MainApp mainApp) {
-		this.mainApp = mainApp;
+	public Button getConnectBtn() {
+		return connectBtn;
 	}
 	
 	public boolean isConnected() {
@@ -97,6 +145,14 @@ public class RootLayoutController implements Initializable {
 		
 		return false;
 	}
+	
+	/*
+	 * SETTER
+	 */
+	public void setMainApp(MainApp mainApp) {
+		this.mainApp = mainApp;
+	}
+	
 	
 	/*
 	 * SINGLETON

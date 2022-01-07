@@ -3,8 +3,8 @@ package ch.get.common;
 public enum ServerFlag {
 	JOIN(0),
 	QUIT(1),
-	SEND(2),
-	NICK(3);
+	NICK(2),
+	SEND(3);
 	
 	private int flagValue;
 	

@@ -20,7 +20,7 @@ public class MainApp extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
-		primaryStage.setTitle("간단한 채팅 클라이언트 v1.1");
+		primaryStage.setTitle("간단한 채팅 클라이언트 v1.2");
 		primaryStage.setWidth(WindowProperties.ROOT_LAYOUT_WIDTH.getValue());
 		primaryStage.setHeight(WindowProperties.ROOT_LAYOUT_HEIGHT.getValue());
 		primaryStage.setResizable(false);
