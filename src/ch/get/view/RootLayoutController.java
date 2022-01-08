@@ -38,6 +38,10 @@ public class RootLayoutController implements Initializable {
 	private Thread clientThread;
 	private MainApp mainApp;
 	
+	private TextField hostField;
+	private TextField portField;
+	private TextField nickNameField;
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		instance = this;
@@ -100,16 +104,16 @@ public class RootLayoutController implements Initializable {
 	private void doShowInfo() {
 		mainApp.showInfoWindow();
 		
-		TextField hostField = 
-				InfoLayoutController.getInstance().getHostAddrField();
-		TextField portField = 
-				InfoLayoutController.getInstance().getHostPortField();
-		
 		ConcurrentHashMap<String, Object> userInfo = UserProperties.getUserInfo();
+		hostField = InfoLayoutController.getInstance().getHostAddrField();
+		portField = InfoLayoutController.getInstance().getHostPortField();
+		nickNameField = InfoLayoutController.getInstance().getNickNameField();
 		
 		hostField.setText(userInfo.get(UserPropertiesKey.DEST_ADDR.name()).toString());
-		portField.setText(userInfo.get(UserPropertiesKey.DEST_PORT.name()).toString());
-		
+		portField.setText(userInfo.get(UserPropertiesKey.DEST_PORT.name()).toString());		
+		if (userInfo.containsKey(UserPropertiesKey.NICK_NAME.name())) {
+			nickNameField.setText(userInfo.get(UserPropertiesKey.NICK_NAME.name()).toString());
+		}
 		if (isConnected()) {
 			hostField.setDisable(true);
 			portField.setDisable(true);

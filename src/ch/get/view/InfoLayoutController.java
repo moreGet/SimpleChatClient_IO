@@ -106,6 +106,10 @@ public class InfoLayoutController implements Initializable {
 		return hostPortField;
 	}
 
+	public TextField getNickNameField() {
+		return nickNameField;
+	}
+	
 	/*
 	 * SETTER
 	 */
