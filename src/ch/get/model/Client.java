@@ -113,10 +113,12 @@ public class Client implements Runnable {
 					ComponentController.printServerLog(RootLayoutController.getInstance().getMainLogTextArea(), msg);
 				}
 			} catch (IOException e) {
-				ComponentController.printServerLog(RootLayoutController.getInstance().getMainLogTextArea(), "종료...");
+				ComponentController.printServerLog(RootLayoutController.getInstance().getMainLogTextArea(), "서버로 부터 접속이 종료 되었습니다.");
 
 				try {
-					socket.close();
+					if (socket != null) {
+						socket.close();
+					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
@@ -151,7 +153,6 @@ public class Client implements Runnable {
 	public void doQuit() {
 		try {
 			if (socket != null || !socket.isClosed()) {
-				;
 				try {
 					if (socket.isConnected()) {
 						StringBuffer sb = new StringBuffer();
